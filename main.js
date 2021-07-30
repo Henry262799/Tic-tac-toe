@@ -37,7 +37,7 @@ const computerPlayer= (sign)=>{
         let choiceArrayRef=computerChoice();
 
         let choice= Math.floor(Math.random()*choiceArrayRef.length);
-        return choice;
+        return choiceArrayRef[choice];
         //return choiceArrayRef.length;
     }
 
@@ -122,7 +122,7 @@ const gameController= function(){
     let _isGridFull=()=>{
 
         for(let i=0;i<gameBoard.getGameBoard().length;i++){
-            console.log(gameBoard.getGameBoard()[i]);
+            //console.log(gameBoard.getGameBoard()[i]);
 
             //if((typeof(gameBoard.getGameBoard()[i])==='undefined')){
                 //return false;
@@ -305,19 +305,6 @@ const displayControllar= function(){
         event.target.removeEventListener('click', _buttonEventListenerHelper);
 
     }
-
-
-
-
-    // Game display Event Listener 
-
-    gameBoard.getBoardButtons().forEach(button=>{
-        button.addEventListener('click',_buttonEventListenerHelper);   
-
-    })
-
-
-
         
 
     let resetBoard=()=>{
@@ -333,7 +320,15 @@ const displayControllar= function(){
         }
 
         let playerPick=playerChoice(event);
+        displayBoard();
+
+        if(gameController.isGameOver()){
+            return;
+        }
+
         let computerPick=computerChoice();
+        displayBoard();
+        event.target.removeEventListener('click',playGame);
 
     }
 
@@ -356,10 +351,20 @@ const displayControllar= function(){
         let pickLocation= gameController.getComputerPlayer().computerPlaceLocation();
         let comp_sign=gameController.getComputerPlayer().sign;
         let button=gameBoard.getBoardButtons()[pickLocation];
+        gameBoard.getGameBoard()[pickLocation]=comp_sign;
+        button.textContent=comp_sign;
         return button;
 
         
     }
+
+
+      // Game display Event Listener 
+
+      gameBoard.getBoardButtons().forEach(button=>{
+        button.addEventListener('click',playGame);   
+
+    })
 
     return {
 
