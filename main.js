@@ -42,11 +42,95 @@ const computerPlayer= (sign)=>{
     }
 
 
+    let scores={
+        computer:10,
+        player:-10,
+        tie:0
+    }
+
+    let miniMax=(board,depth,isMaxmizing)=>{
+
+        if(gameController.checkPlayerWin()){
+
+            return scores.player;
+
+        }
+        else if(gameController.checkComputerWin()){
+            
+            return scores.computer;
+        }
+        else if(gameController.isGameOver()){
+
+            return scores.tie;
+        }
+
+
+        if(isMaxmizing){
+
+            let scoreBest=-Infinity;
+            for(let i=0;i<gameBoard.getGameBoard().length;i++){
+                if(gameBoard.getGameBoard()[i]==undefined){
+                    gameBoard.setGameBoard(i,sign);
+                    let score=miniMax(gameBoard.getGameBoard(),depth+1,false);
+                    score=score+depth;
+                    gameBoard.setGameBoard(i,undefined);
+                    if(score>scoreBest){
+                        scoreBest=score;
+                    }
+                }
+            }
+
+            return scoreBest;
+
+
+        }
+        else{
+            let scoreBest=Infinity;
+            for(let i=0;i<gameBoard.getGameBoard().length;i++){
+                if(gameBoard.getGameBoard()[i]==undefined){
+                    gameBoard.setGameBoard(i,gameController.getHumanPlayer().sign);
+                    let score=miniMax(gameBoard.getGameBoard(),depth+1,true);
+                     score=score-depth;
+                    gameBoard.setGameBoard(i,undefined);
+                    if(score<scoreBest){
+                        scoreBest=score;
+                    }
+                }
+            }
+
+            return scoreBest;
+        }
+
+
+    }
+
+    let bestMove=()=>{
+
+        let moveBest;
+        let bestScore=-Infinity;
+        for(let i=0;i<gameBoard.getGameBoard().length;i++){
+            if(gameBoard.getGameBoard()[i]==undefined){
+                gameBoard.setGameBoard(i,sign);
+                let score=miniMax(gameBoard.getGameBoard(),0,false);
+                gameBoard.setGameBoard(i,undefined);
+                if(score>bestScore){
+                    bestScore=score;
+                    moveBest=i;
+                }
+            }
+        }
+
+        return moveBest;
+    }
+
+
+
 
     return {
         sign,
         computerChoice,
         computerPlaceLocation,
+        bestMove,
     }
 
 }
@@ -57,6 +141,7 @@ const gameBoard= function(){
 
     let _gameBoard= new Array(9);
     let _gameBoardButtons= Array.from(document.querySelectorAll('.game-box'));
+    let _resetButton= document.querySelector('.reset');
 
     //console.log(_gameBoardButtons);
     //console.log(_gameBoard.length);
@@ -65,6 +150,10 @@ const gameBoard= function(){
     let isTaken=(number)=>{
 
         return _gameBoard[number]!==undefined;
+    }
+
+    let getResetButton=()=>{
+        return _resetButton;
     }
 
     let getGameBoard=()=>{
@@ -89,6 +178,7 @@ const gameBoard= function(){
         getGameBoard,
         getBoardButtons,
         setGameBoard,
+        getResetButton,
         
     }
 
@@ -108,6 +198,10 @@ const gameController= function(){
     let getComputerPlayer=()=>{
 
         return _ai;
+    }
+
+    let getHumanPlayer=()=>{
+        return _human_player;
     }
 
     let getSign=()=>{
@@ -262,6 +356,7 @@ const gameController= function(){
         resetBoard,
         getSign,
         getComputerPlayer,
+        getHumanPlayer,
 
     }
 
@@ -310,6 +405,10 @@ const displayControllar= function(){
     let resetBoard=()=>{
         gameController.resetBoard();
         displayBoard();
+        gameBoard.getBoardButtons().forEach(button=>{
+            button.addEventListener('click',playGame);   
+    
+        })
 
     }
 
@@ -321,14 +420,15 @@ const displayControllar= function(){
 
         let playerPick=playerChoice(event);
         displayBoard();
+        event.target.removeEventListener('click',playGame);
 
         if(gameController.isGameOver()){
             return;
         }
 
+        
         let computerPick=computerChoice();
         displayBoard();
-        event.target.removeEventListener('click',playGame);
 
     }
 
@@ -348,11 +448,14 @@ const displayControllar= function(){
 
     let computerChoice=()=>{
 
-        let pickLocation= gameController.getComputerPlayer().computerPlaceLocation();
+        //let pickLocation= gameController.getComputerPlayer().computerPlaceLocation();
+        let pickLocation=gameController.getComputerPlayer().bestMove();
+        console.log(pickLocation);
         let comp_sign=gameController.getComputerPlayer().sign;
         let button=gameBoard.getBoardButtons()[pickLocation];
         gameBoard.getGameBoard()[pickLocation]=comp_sign;
         button.textContent=comp_sign;
+        button.removeEventListener('click',playGame);
         return button;
 
         
@@ -365,6 +468,8 @@ const displayControllar= function(){
         button.addEventListener('click',playGame);   
 
     })
+
+    gameBoard.getResetButton().addEventListener('click',resetBoard);
 
     return {
 
