@@ -91,3 +91,9 @@
 .computer-difficulty button:hover{
     background-color:rgb(224, 203, 163);
 }
+
+.winner{
+    color: wheat;
+    font-size:70px;
+    display: none;
+}
